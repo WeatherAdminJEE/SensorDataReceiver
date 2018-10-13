@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.ResourceBundle;
 
 /**
  * MQTT Publisher class
@@ -26,18 +27,15 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
     private int qos;
     private boolean cleanSession;
 
+    // Config file
+    public static final ResourceBundle CONFIG = ResourceBundle.getBundle("config");
+
     /**
      * Constructor
      * @param clientId ID of the client to connect MQTT broker
      */
     public MQTTPublisher(String clientId) {
-        String url = "barnab2.tk";
-        String port = "21883";
-        String protocol = "tcp://";
-        brokerUrl = protocol + url + ":" + port;
-        cleanSession = true;
-        qos = 2;
-        topic = "foo";
+        initMQTTPublisher();
 
         // Temp directory
         String tmpDir = System.getProperty("java.io.tmpdir");
@@ -56,6 +54,19 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
     }
 
     /**
+     * Init MQTTPublisher properties
+     */
+    private void initMQTTPublisher() {
+        String url = CONFIG.getString("MQTTBroker");
+        String port = CONFIG.getString("MQTTPort");
+        String protocol = "tcp://";
+        brokerUrl = protocol + url + ":" + port;
+        cleanSession = true;
+        qos = 2;
+        topic = CONFIG.getString("MQTTTopic");
+    }
+
+    /**
      * Publish a message to an MQTT server
      * @param sensorData Sensor data to send to the MQTT server
      */
@@ -67,26 +78,10 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
             client.connect();
             System.out.println("Connected");
 
-            System.out.println(
-                "idSensor:"+String.valueOf(sensorData.getIdSensor())+"\n"
-                +"idCountry"+sensorData.getIdCountry()+"\n"
-                +"idCity:"+sensorData.getIdCity()+"\n"
-                +"temperature:"+String.valueOf(sensorData.getMeasure().getTemperature())+"\n"
-                +"windSpeed:"+String.valueOf(sensorData.getMeasure().getWindSpeed())+"\n"
-                +"pressure:"+String.valueOf(sensorData.getMeasure().getPressure())+"\n"
-                +"timestamp:"+sensorData.getDate().toString()
-            );
-
-            // Serialize object
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutput out;
-            out = new ObjectOutputStream(bos);
-            out.writeObject(sensorData);
-            out.flush();
-            byte[] payload = bos.toByteArray();
+            printSentData(sensorData);
 
             // Create MQTT message
-            MqttMessage message = new MqttMessage(payload);
+            MqttMessage message = new MqttMessage(serializeSensorData(sensorData));
             message.setQos(qos);
 
             // Publish message
@@ -104,12 +99,42 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
     }
 
     /**
+     * Serialize a SensorData object
+     * @param sensorData SensorData to serialize
+     * @return Serialized SensorData
+     * @throws IOException
+     */
+    public byte[] serializeSensorData(SensorData sensorData) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput;
+        objectOutput = new ObjectOutputStream(outputStream);
+        objectOutput.writeObject(sensorData);
+        objectOutput.flush();
+        return outputStream.toByteArray();
+    }
+
+    /**
+     * System.out sent SensorData
+     * @param sensorData SensorData to print
+     */
+    public void printSentData(SensorData sensorData) {
+        System.out.println(
+            "idSensor:"+String.valueOf(sensorData.getIdSensor())+"\n"
+            +"idCountry:"+sensorData.getIdCountry()+"\n"
+            +"idCity:"+sensorData.getIdCity()+"\n"
+            +"temperature:"+String.valueOf(sensorData.getMeasure().getTemperature())+"\n"
+            +"windSpeed:"+String.valueOf(sensorData.getMeasure().getWindSpeed())+"\n"
+            +"pressure:"+String.valueOf(sensorData.getMeasure().getPressure())+"\n"
+            +"timestamp:"+sensorData.getDate().toString()
+        );
+    }
+
+    /**
      * @see MqttCallback#connectionLost(Throwable)
      */
     public void connectionLost(Throwable cause) {
         // Called when the connection to the server has been lost.
         System.out.println("connectionLost() - Connection to " + brokerUrl + " lost : " + cause);
-        System.exit(1);
     }
 
     /**

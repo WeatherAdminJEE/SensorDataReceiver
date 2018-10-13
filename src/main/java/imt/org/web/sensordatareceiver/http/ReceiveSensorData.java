@@ -1,37 +1,59 @@
 package imt.org.web.sensordatareceiver.http;
 
+import imt.org.web.commonmodel.Measure;
+import imt.org.web.commonmodel.SensorData;
+import imt.org.web.sensordatareceiver.publisher.IPublisher;
+import imt.org.web.sensordatareceiver.publisher.mqtt.MQTTPublisher;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.Timestamp;
 
 @WebServlet(name = "ReceiveSensorData", urlPatterns = "/sensorData")
 public class ReceiveSensorData extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.println("<h1>idSensor" + request.getParameter("idSensor") + "</h1>");
-        out.println("<h1>country" + request.getParameter("country") + "</h1>");
-        out.println("<h1>city" + request.getParameter("city") + "</h1>");
-        out.println("<h1>temperature" + request.getParameter("temperature") + "</h1>");
-        out.println("<h1>windSpeed" + request.getParameter("windSpeed") + "</h1>");
-        out.println("<h1>pressure" + request.getParameter("pressure") + "</h1>");
-        out.println("<h1>timestamp" + request.getParameter("timestamp") + "</h1>");
+        if(request.getParameter("idSensor") == null || request.getParameter("idSensor") == "") {
+            throw new ServletException("Empty sensor ID");
+        } else if(request.getParameter("idCountry") == null || request.getParameter("idCountry") == "") {
+            throw new ServletException("Empty country ID");
+        } else if(request.getParameter("idCity") == null || request.getParameter("idCity") == "") {
+            throw new ServletException("Empty city ID");
+        } else if(request.getParameter("temperature") == null || request.getParameter("temperature") == "") {
+            throw new ServletException("Empty temparature");
+        } else if(request.getParameter("windSpeed") == null || request.getParameter("windSpeed") == "") {
+            throw new ServletException("Empty windSpeed");
+        } else if(request.getParameter("pressure") == null || request.getParameter("pressure") == "") {
+            throw new ServletException("Empty pressure");
+        } else if(request.getParameter("timestamp") == null || request.getParameter("timestamp") == "") {
+            throw new ServletException("Empty timestamp");
+        } else {
+            System.out.println("idSensor:" + request.getParameter("idSensor"));
+            System.out.println("idCountry:" + request.getParameter("idCountry"));
+            System.out.println("idCity:" + request.getParameter("idCity"));
+            System.out.println("temperature:" + request.getParameter("temperature"));
+            System.out.println("windSpeed:" + request.getParameter("windSpeed"));
+            System.out.println("pressure:" + request.getParameter("pressure"));
+            System.out.println("timestamp:" + request.getParameter("timestamp"));
 
-        System.out.println("<h1>idSensor" + request.getParameter("idSensor") + "</h1>");
-        System.out.println("<h1>country" + request.getParameter("country") + "</h1>");
-        System.out.println("<h1>city" + request.getParameter("city") + "</h1>");
-        System.out.println("<h1>temperature" + request.getParameter("temperature") + "</h1>");
-        System.out.println("<h1>windSpeed" + request.getParameter("windSpeed") + "</h1>");
-        System.out.println("<h1>pressure" + request.getParameter("pressure") + "</h1>");
-        System.out.println("<h1>timestamp" + request.getParameter("timestamp") + "</h1>");
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+            IPublisher publisher = new MQTTPublisher("SensorDataReceiver");
+            Measure measure = new Measure(
+                Double.valueOf(request.getParameter("temperature")),
+                Double.valueOf(request.getParameter("windSpeed")),
+                Double.valueOf(request.getParameter("pressure"))
+            );
+            SensorData sensorData = new SensorData(
+                Integer.parseInt(request.getParameter("idSensor")),
+                request.getParameter("idCountry"),
+                request.getParameter("idCity"),
+                measure,
+                Timestamp.valueOf(request.getParameter("timestamp"))
+            );
+            publisher.publish(sensorData);
+        }
     }
 }

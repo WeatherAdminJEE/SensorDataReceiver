@@ -38,31 +38,11 @@ public class ReceiveSensorData extends HttpServlet {
                 request.getParameter("idCountry"),
                 request.getParameter("idCity"),
                 request.getParameter("gpsCoordinates"),
-                setMeasureType(request.getParameter("measureType")),
+                MeasureType.valueOf(request.getParameter("measureType")),
                 Double.valueOf(request.getParameter("measureValue")),
                 Timestamp.valueOf(request.getParameter("timestamp"))
             );
             ((IPublisher) getServletContext().getAttribute("MQTTPublisher")).publish(sensorData);
-        }
-    }
-
-    /**
-     * Set MeasureType from main args
-     * @param measureType Main measure type arg
-     * @return MeasureType
-     */
-    public MeasureType setMeasureType(String measureType) {
-        switch(measureType) {
-            case "TEMPERATURE":
-                return MeasureType.TEMPERATURE;
-            case "ATM_PRESSURE":
-                return MeasureType.ATM_PRESSURE;
-            case "WIND_SPEED":
-                return MeasureType.WIND_SPEED;
-            case "WIND_DIRECTION":
-                return MeasureType.WIND_DIRECTION;
-            default:
-                return null;
         }
     }
 }

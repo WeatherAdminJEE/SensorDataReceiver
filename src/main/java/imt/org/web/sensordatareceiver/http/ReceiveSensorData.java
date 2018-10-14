@@ -1,6 +1,6 @@
 package imt.org.web.sensordatareceiver.http;
 
-import imt.org.web.commonmodel.Measure;
+import imt.org.web.commonmodel.MeasureType;
 import imt.org.web.commonmodel.SensorData;
 import imt.org.web.sensordatareceiver.publisher.IPublisher;
 
@@ -24,28 +24,45 @@ public class ReceiveSensorData extends HttpServlet {
             throw new ServletException("Empty country ID");
         } else if(request.getParameter("idCity") == null || request.getParameter("idCity") == "") {
             throw new ServletException("Empty city ID");
-        } else if(request.getParameter("temperature") == null || request.getParameter("temperature") == "") {
-            throw new ServletException("Empty temparature");
-        } else if(request.getParameter("windSpeed") == null || request.getParameter("windSpeed") == "") {
-            throw new ServletException("Empty windSpeed");
-        } else if(request.getParameter("pressure") == null || request.getParameter("pressure") == "") {
-            throw new ServletException("Empty pressure");
+        } else if(request.getParameter("gpsCoordinates") == null || request.getParameter("gpsCoordinates") == "") {
+            throw new ServletException("Empty GPS coordinates");
+        } else if(request.getParameter("measureType") == null || request.getParameter("measureType") == "") {
+            throw new ServletException("Empty measure type");
+        } else if(request.getParameter("measureValue") == null || request.getParameter("measureValue") == "") {
+            throw new ServletException("Empty measure value");
         } else if(request.getParameter("timestamp") == null || request.getParameter("timestamp") == "") {
             throw new ServletException("Empty timestamp");
         } else {
-            Measure measure = new Measure(
-                Double.valueOf(request.getParameter("temperature")),
-                Double.valueOf(request.getParameter("windSpeed")),
-                Double.valueOf(request.getParameter("pressure"))
-            );
             SensorData sensorData = new SensorData(
                 Integer.parseInt(request.getParameter("idSensor")),
                 request.getParameter("idCountry"),
                 request.getParameter("idCity"),
-                measure,
+                request.getParameter("gpsCoordinates"),
+                setMeasureType(request.getParameter("measureType")),
+                Double.valueOf(request.getParameter("measureValue")),
                 Timestamp.valueOf(request.getParameter("timestamp"))
             );
             ((IPublisher) getServletContext().getAttribute("MQTTPublisher")).publish(sensorData);
+        }
+    }
+
+    /**
+     * Set MeasureType from main args
+     * @param measureType Main measure type arg
+     * @return MeasureType
+     */
+    public MeasureType setMeasureType(String measureType) {
+        switch(measureType) {
+            case "TEMPERATURE":
+                return MeasureType.TEMPERATURE;
+            case "ATM_PRESSURE":
+                return MeasureType.ATM_PRESSURE;
+            case "WIND_SPEED":
+                return MeasureType.WIND_SPEED;
+            case "WIND_DIRECTION":
+                return MeasureType.WIND_DIRECTION;
+            default:
+                return null;
         }
     }
 }

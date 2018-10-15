@@ -1,7 +1,7 @@
 package imt.org.web.sensordatareceiver.http;
 
-import imt.org.web.commonmodel.MeasureType;
-import imt.org.web.commonmodel.SensorData;
+import imt.org.web.commonmodel.model.MeasureType;
+import imt.org.web.commonmodel.model.SensorData;
 import imt.org.web.sensordatareceiver.publisher.IPublisher;
 
 import javax.servlet.ServletException;
@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 @WebServlet(name = "ReceiveSensorData", urlPatterns = "/sensorData")
 public class ReceiveSensorData extends HttpServlet {
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         if(request.getParameter("idSensor") == null || request.getParameter("idSensor") == "") {
             throw new ServletException("Empty sensor ID");

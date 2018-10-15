@@ -1,6 +1,6 @@
 package imt.org.web.sensordatareceiver.publisher.mqtt;
 
-import imt.org.web.commonmodel.SensorData;
+import imt.org.web.commonmodel.model.SensorData;
 import imt.org.web.sensordatareceiver.publisher.IPublisher;
 
 import lombok.Getter;

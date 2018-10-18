@@ -17,31 +17,40 @@ import java.sql.Timestamp;
 @WebServlet(name = "ReceiveSensorData", urlPatterns = "/sensorData")
 public class ReceiveSensorData extends HttpServlet {
 
+    // POST params constants
+    private static final String ID_SENSOR = "idSensor";
+    private static final String ID_COUNTRY = "idCountry";
+    private static final String ID_CITY = "idCity";
+    private static final String GPS_COORDINATES = "gpsCoordinates";
+    private static final String MEASURE_TYPE = "measureType";
+    private static final String MEASURE_VALUE = "measureValue";
+    private static final String TIMESTAMP = "timestamp";
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        if(request.getParameter("idSensor") == null || request.getParameter("idSensor") == "") {
-            throw new ServletException("Empty sensor ID");
-        } else if(request.getParameter("idCountry") == null || request.getParameter("idCountry") == "") {
-            throw new ServletException("Empty country ID");
-        } else if(request.getParameter("idCity") == null || request.getParameter("idCity") == "") {
-            throw new ServletException("Empty city ID");
-        } else if(request.getParameter("gpsCoordinates") == null || request.getParameter("gpsCoordinates") == "") {
-            throw new ServletException("Empty GPS coordinates");
-        } else if(request.getParameter("measureType") == null || request.getParameter("measureType") == "") {
-            throw new ServletException("Empty measure type");
-        } else if(request.getParameter("measureValue") == null || request.getParameter("measureValue") == "") {
-            throw new ServletException("Empty measure value");
-        } else if(request.getParameter("timestamp") == null || request.getParameter("timestamp") == "") {
-            throw new ServletException("Empty timestamp");
+        if(request.getParameter(ID_SENSOR) == null || request.getParameter(ID_SENSOR) == "") {
+            throw new ServletException("Empty parameter : " + ID_SENSOR);
+        } else if(request.getParameter(ID_COUNTRY) == null || request.getParameter(ID_COUNTRY) == "") {
+            throw new ServletException("Empty parameter : " + ID_COUNTRY);
+        } else if(request.getParameter(ID_CITY) == null || request.getParameter(ID_CITY) == "") {
+            throw new ServletException("Empty parameter : " + ID_CITY);
+        } else if(request.getParameter(GPS_COORDINATES) == null || request.getParameter(GPS_COORDINATES) == "") {
+            throw new ServletException("Empty parameter : " + GPS_COORDINATES);
+        } else if(request.getParameter(MEASURE_TYPE) == null || request.getParameter(MEASURE_TYPE) == "") {
+            throw new ServletException("Empty parameter : " + MEASURE_TYPE);
+        } else if(request.getParameter(MEASURE_VALUE) == null || request.getParameter(MEASURE_VALUE) == "") {
+            throw new ServletException("Empty parameter : " + MEASURE_VALUE);
+        } else if(request.getParameter(TIMESTAMP) == null || request.getParameter(TIMESTAMP) == "") {
+            throw new ServletException("Empty parameter : " + TIMESTAMP);
         } else {
             SensorData sensorData = new SensorData(
-                Integer.parseInt(request.getParameter("idSensor")),
-                request.getParameter("idCountry"),
-                request.getParameter("idCity"),
-                request.getParameter("gpsCoordinates"),
-                MeasureType.valueOf(request.getParameter("measureType")),
-                Double.valueOf(request.getParameter("measureValue")),
-                Timestamp.valueOf(request.getParameter("timestamp"))
+                Integer.parseInt(request.getParameter(ID_SENSOR)),
+                request.getParameter(ID_COUNTRY),
+                request.getParameter(ID_CITY),
+                request.getParameter(GPS_COORDINATES),
+                MeasureType.valueOf(request.getParameter(MEASURE_TYPE)),
+                Double.valueOf(request.getParameter(MEASURE_VALUE)),
+                Timestamp.valueOf(request.getParameter(TIMESTAMP))
             );
             ((IPublisher) getServletContext().getAttribute("MQTTPublisher")).publish(sensorData);
         }

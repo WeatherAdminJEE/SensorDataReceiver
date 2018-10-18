@@ -10,15 +10,22 @@ import javax.servlet.annotation.WebListener;
 @WebListener
 public class StartupConfig implements ServletContextListener {
 
+    /**
+     * Init MQTTPublisher at server startup
+     * @param servletContextEvent servletContextEvent
+     */
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        // Init MQTTPublisher at server startup
         IPublisher mqttPublisher = new MQTTPublisher("SensorDataReceiver");
         servletContextEvent.getServletContext().setAttribute("MQTTPublisher", mqttPublisher);
     }
 
+    /**
+     * Unused
+     * @param servletContextEvent servletContextEvent
+     */
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
+        throw new UnsupportedOperationException();
     }
 }

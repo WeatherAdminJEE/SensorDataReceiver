@@ -48,11 +48,10 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
 
             // Construct an MQTT blocking mode client
             client = new MqttClient(this.brokerUrl, clientId, dataStore);
-            // Set this wrapper as the callback handler
             client.setCallback(this);
         } catch (MqttException e) {
             System.out.println("MQTTPublisher() - Unable to set up client : " + e.getMessage());
-            System.exit(1);
+            System.exit(0);
         }
     }
 
@@ -135,14 +134,21 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
     /**
      * @see MqttCallback#connectionLost(Throwable)
      */
+    @Override
     public void connectionLost(Throwable cause) {
         // Called when the connection to the server has been lost.
         System.out.println("connectionLost() - Connection to " + brokerUrl + " lost : " + cause);
+        try {
+            client.connect(connectOptions);
+        } catch (MqttException e) {
+            System.out.println("connectionLost() - Unable to reconnect broker - " + e.getMessage());
+        }
     }
 
     /**
      * @see MqttCallback#deliveryComplete(IMqttDeliveryToken)
      */
+    @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         // Called when a message has been delivered to the server
         System.out.println("deliveryComplete() - Message has been successfully delivered");
@@ -151,6 +157,7 @@ public class MQTTPublisher implements IPublisher, MqttCallback {
     /**
      * @see MqttCallback#messageArrived(String, MqttMessage)
      */
+    @Override
     public void messageArrived(String topic, MqttMessage message) {
         // Unused - Called when a message arrives from the server
     }
